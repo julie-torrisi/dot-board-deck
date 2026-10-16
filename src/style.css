@@ -10,3 +10,7 @@ body.presenter main { padding: 32px; max-width: 760px; }
 body.presenter header, body.presenter footer { display: flex; justify-content: space-between; color: #8F8C85; font-size: 14px; letter-spacing: .08em; }
 body.presenter h1 { font-size: 28px; letter-spacing: .08em; margin: 24px 0 12px; }
 body.presenter p { font-family: system-ui, sans-serif; font-size: 22px; line-height: 1.5; white-space: pre-wrap; }
+.ask { position: fixed; box-sizing: border-box; background: transparent; border: 0; border-bottom: 1px solid #8F8C85; color: #ECEAE5; font-family: ui-monospace, Menlo, monospace; letter-spacing: .12em; text-transform: uppercase; outline: none; padding: 0; caret-color: #ECEAE5; }
+.ask::placeholder { color: #8F8C85; }
+:root[data-theme="light"] .ask { color: #1E1E1C; caret-color: #1E1E1C; border-color: #5C5954; }
+:root[data-theme="light"] .ask::placeholder { color: #5C5954; }
