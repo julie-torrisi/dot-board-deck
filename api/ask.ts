@@ -8,9 +8,7 @@ const MODEL = process.env.ASK_MODEL || 'claude-haiku-5-5';
 
 // Other sites allowed to call this endpoint (for example private decks), comma separated.
 const ORIGINS = (process.env.ASK_ALLOWED_ORIGINS || '').split(',').map((o) => o.trim()).filter(Boolean);
-let cors: Record<string, string> = {};
-
-const json = (body: unknown, status = 200) =>
+const reply = (cors: Record<string, string>) => (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', 'cache-control': 'no-store', ...cors } });
 
 function corsFor(req: Request): Record<string, string> {
@@ -24,7 +22,7 @@ export async function OPTIONS(req: Request): Promise<Response> {
 }
 
 export async function POST(req: Request): Promise<Response> {
-  cors = corsFor(req);
+  const json = reply(corsFor(req));
   const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
   if (!limiter.allow(ip)) return json({ reply: 'TOO MANY QUESTIONS.\nGIVE THE BOARD A\nMINUTE.' }, 429);
 
