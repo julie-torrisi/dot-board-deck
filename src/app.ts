@@ -14,9 +14,11 @@ export class DeckApp {
   readonly engine = new FlapEngine();
   private frame = new Frame();
   private items: Item[] = [];
+  /** Live items added to the current slide, such as an icebreaker reply. */
+  private extra: Item[] = [];
   private imageStart = 0;
   private raf = 0;
-  index = 0;
+  index = -1;
   hooks: SlideHooks = {};
   private channel?: BroadcastChannel;
 
@@ -44,16 +46,25 @@ export class DeckApp {
 
   go(i: number, updateHash = true) {
     const index = Math.max(0, Math.min(this.total - 1, i));
+    if (index !== this.index) this.extra = [];
     this.index = index;
-    this.items = layoutSlide(this.deck, index);
+    this.hooks.onEnter?.(index, layoutSlide(this.deck, index));
+    this.items = [...layoutSlide(this.deck, index), ...this.extra];
     const now = performance.now();
     this.engine.goto(slotsOf(this.items), progressLength(index, this.total), now);
     this.imageStart = now + (this.engine.reduced ? 0 : 260);
     if (updateHash) history.replaceState(null, '', `#${this.deck.slides[index].id}`);
     const sr = document.getElementById('sr');
     if (sr) sr.textContent = srText(this.items);
-    this.hooks.onEnter?.(index, this.items);
     this.broadcast();
+    this.kick();
+  }
+
+  /** Replace the live items on the current slide; changed slots flap. */
+  setExtra(items: Item[]) {
+    this.extra = items;
+    this.items = [...layoutSlide(this.deck, this.index), ...items];
+    this.engine.goto(slotsOf(this.items), progressLength(this.index, this.total), performance.now());
     this.kick();
   }
 

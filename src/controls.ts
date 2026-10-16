@@ -27,7 +27,7 @@ export function showHint() {
   try { if (localStorage.getItem('dot-board-hint')) return; localStorage.setItem('dot-board-hint', '1'); } catch { /* show anyway */ }
   const el = document.createElement('div');
   el.className = 'hint';
-  el.textContent = 'ARROWS: MOVE  ·  F: FULLSCREEN  ·  T: THEME  ·  N: NOTES';
+  el.textContent = 'ARROWS: MOVE  /  A: ASK  /  F: FULLSCREEN  /  T: THEME  /  N: NOTES';
   document.body.append(el);
   setTimeout(() => el.classList.add('out'), 3000);
   setTimeout(() => el.remove(), 3600);

@@ -21,7 +21,7 @@ describe('slot diffing', () => {
   it('flips only the changed page digit', () => {
     const pg = [...b.values()].filter((s) => s.row === 19 && s.col > 300).sort((x, y) => x.col - y.col);
     const flipped = pg.filter((s) => flip.includes(s.key)).map((s) => s.ch);
-    expect(pg.map((s) => s.ch).join('')).toBe('PG 02/06');
+    expect(pg.map((s) => s.ch).join('')).toBe('PG 02/07');
     expect(flipped).toEqual(['2']);
   });
   it('flips slots that leave the slide to blank', () => {
