@@ -14,12 +14,12 @@ describe('slot diffing', () => {
   const { flip, keep } = diffSlots(a, b);
 
   it('keeps the brand still', () => {
-    const brand = [...b.values()].filter((s) => s.row === 19 && s.col >= 26 && s.col < 70);
+    const brand = [...b.values()].filter((s) => s.row === 19 && s.x >= 26 && s.x < 70);
     expect(brand.length).toBe(9);
     for (const s of brand) expect(keep).toContain(s.key);
   });
   it('flips only the changed page digit', () => {
-    const pg = [...b.values()].filter((s) => s.row === 19 && s.col > 300).sort((x, y) => x.col - y.col);
+    const pg = [...b.values()].filter((s) => s.row === 19 && s.x > 300).sort((a, b) => a.x - b.x);
     const flipped = pg.filter((s) => flip.includes(s.key)).map((s) => s.ch);
     expect(pg.map((s) => s.ch).join('')).toBe('PG 02/07');
     expect(flipped).toEqual(['2']);
@@ -48,19 +48,15 @@ describe('flap sequence', () => {
   });
 });
 
-describe('flip disc', () => {
-  it('keeps dots on in both states at full size', () => {
-    expect(flipScale(true, true, 3, 7, 10)).toEqual({ on: 'new', scale: 1 });
+describe('card flip', () => {
+  it('folds the old face away in the first half', () => {
+    expect(flipScale(0)).toEqual({ face: 'old', scale: 1 });
+    expect(flipScale(STEP / 4).face).toBe('old');
+    expect(flipScale(STEP / 4).scale).toBeCloseTo(0.5);
   });
-  it('shrinks the old dot to 0, then grows the new one', () => {
-    expect(flipScale(true, false, 0, 7, 0).scale).toBe(1);
-    expect(flipScale(false, true, 0, 7, STEP / 2).scale).toBe(1);
-    expect(flipScale(false, true, 0, 7, STEP / 8).on).toBe('none');
-  });
-  it('starts lower glyph rows later', () => {
-    const top = flipScale(true, false, 0, 7, 10).scale;
-    const bottom = flipScale(true, false, 6, 7, 10).scale;
-    expect(bottom).toBeGreaterThan(top);
+  it('unfolds the new face in the second half', () => {
+    expect(flipScale(STEP).face).toBe('new');
+    expect(flipScale(STEP).scale).toBe(1);
   });
 });
 

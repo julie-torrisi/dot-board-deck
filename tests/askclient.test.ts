@@ -9,8 +9,8 @@ describe('replyItems', () => {
     expect(items.every((i) => i.col === 34 && i.text.length <= 23)).toBe(true);
     expect(items.map((i) => i.row)).toEqual([70, 94, 118]);
   });
-  it('blanks unsupported characters', () => {
-    const [first] = replyItems('hi @ you') as TextItem[];
-    expect(first.text).not.toContain('@');
+  it('replaces em dashes and uppercases', () => {
+    const [first] = replyItems('calm \u2014 curious') as TextItem[];
+    expect(first.text).toBe('CALM, CURIOUS');
   });
 });

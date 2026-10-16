@@ -1,25 +1,33 @@
 // Turns laid-out items into slots (one per character) and lit cells.
 
-import { COLS, Frame, Ink } from './grid';
-import { ROLES, glyph, advance, type Role } from './glyphs';
+import { Frame, Ink } from './grid';
+import { FACE_5X7, glyph } from './glyphs';
 import { startCol } from './layout';
-import type { Item, ImageItem } from './deck';
+import { display, offsets } from './type';
+import type { Role } from './tokens';
+import type { Item, ImageItem, InkName } from './deck';
 
-export interface Slot { key: string; role: Role; col: number; row: number; ch: string; ink: Ink; index: number; cursor?: boolean }
+export interface Slot { key: string; role: Role; x: number; row: number; ch: string; ink: Ink; index: number; cursor?: boolean }
 
-export const inkOf = (name?: 'ink' | 'grey') => (name === 'grey' ? Ink.Grey : Ink.Ink);
+export const inkOf = (name?: InkName) => (name === 'grey' ? Ink.Grey : name === 'signal' ? Ink.Signal : Ink.Ink);
 
-/** Every character position becomes a slot keyed by (role, col, row). */
+/** Every character position becomes a slot keyed by role, x and row. */
 export function slotsOf(items: Item[]): Map<string, Slot> {
   const slots = new Map<string, Slot>();
   for (const it of items) {
     if (it.t !== 'text') continue;
-    const c0 = startCol(it);
-    const adv = advance(it.role);
-    [...it.text.toUpperCase()].forEach((ch, i) => {
-      const col = c0 + i * adv;
-      const key = `${it.role}:${col}:${it.row}`;
-      slots.set(key, { key, role: it.role, col, row: it.row, ch, ink: inkOf(it.ink), index: i, cursor: it.cursor });
+    const x0 = startCol(it);
+    if (it.cursor) {
+      const key = `cursor:${x0}:${it.row}`;
+      slots.set(key, { key, role: it.role, x: x0, row: it.row, ch: '#', ink: inkOf(it.ink), index: 0, cursor: true });
+      continue;
+    }
+    const chars = [...display(it.text, it.role)];
+    const offs = offsets(it.text, it.role);
+    chars.forEach((ch, i) => {
+      const x = x0 + offs[i];
+      const key = `${it.role}:${Math.round(x * 4)}:${it.row}`;
+      slots.set(key, { key, role: it.role, x, row: it.row, ch, ink: inkOf(it.ink), index: i });
     });
   }
   return slots;
@@ -35,29 +43,11 @@ export function blocksOf(items: Item[], frame: Frame) {
 
 export const imagesOf = (items: Item[]) => items.filter((i): i is ImageItem => i.t === 'image');
 
-/** Is the font pixel at (x, y) of this character lit? */
-export function pixel(role: Role, ch: string, x: number, y: number): boolean {
-  const g = glyph(ROLES[role].face, ch);
-  return !!g && !!g[y]?.[x];
-}
-
-/** Draw a character into the frame. scaleFor(y) lets the flip vary by glyph row. */
-export function drawChar(frame: Frame, role: Role, col: number, row: number, ch: string, ink: Ink, scaleFor?: (y: number) => number) {
-  const { face, scale } = ROLES[role];
-  const g = glyph(face, ch);
-  if (!g) return;
-  for (let y = 0; y < face.h; y++) {
-    const s = scaleFor ? scaleFor(y) : 1;
-    for (let x = 0; x < face.w; x++) {
-      if (!g[y][x]) continue;
-      for (let dy = 0; dy < scale; dy++) for (let dx = 0; dx < scale; dx++) {
-        const c = col + x * scale + dx;
-        if (c < COLS) frame.set(c, row + y * scale + dy, ink, s);
-      }
-    }
+/** The blinking cursor stays a block of real dots (the 5x7 block at x2). */
+export function drawCursor(frame: Frame, col: number, row: number, ink: Ink, scaleY = 1) {
+  const g = glyph(FACE_5X7, '#')!;
+  for (let y = 0; y < 7; y++) for (let x = 0; x < 5; x++) {
+    if (!g[y][x]) continue;
+    for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 2; dx++) frame.set(Math.round(col) + x * 2 + dx, row + y * 2 + dy, ink, scaleY);
   }
-}
-
-export function drawProgress(frame: Frame, length: number, row = 192, col = 19) {
-  for (let i = 0; i < length; i++) frame.set(col + i, row, Ink.Ink);
 }

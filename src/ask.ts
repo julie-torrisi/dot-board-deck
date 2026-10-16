@@ -2,7 +2,7 @@
 
 import type { DeckApp } from './app';
 import type { Deck, Item, TextItem } from './deck';
-import { sanitize, wrap } from './glyphs';
+import { wrap } from './glyphs';
 import { ASK } from './layout';
 
 export const CANNED = 'SIGNAL LOST. ASK AGAIN.';
@@ -13,7 +13,8 @@ const line = (text: string, i: number, ink: 'ink' | 'grey' = 'ink'): TextItem =>
 
 /** Wrap a reply to 23 H1 characters per line from col 34, at most 3 lines. */
 export function replyItems(reply: string, ink: 'ink' | 'grey' = 'ink'): Item[] {
-  const lines = wrap(sanitize(reply.replace(/\n/g, ' ')), ASK.perLine, ASK.lines);
+  const clean = reply.replace(/\s*[\u2013\u2014]+\s*/g, ', ').replace(/\n/g, ' ').toUpperCase();
+  const lines = wrap(clean, ASK.perLine, ASK.lines);
   return lines.map((l, i) => line(l, i, ink));
 }
 

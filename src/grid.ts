@@ -5,16 +5,15 @@ export const ROWS = 216;
 export const MARGIN = 19; // content spans col 19 to col 364
 export const RIGHT = 365; // right-align edge (exclusive)
 
-export type ThemeName = 'dark' | 'light';
-export interface Theme { bg: string; unlit: string; grey: string; ink: string }
+import { THEMES, TYPE, type Theme, type ThemeName, type Role } from './tokens';
+import { capRows, nudge } from './type';
+export { THEMES, type Theme, type ThemeName };
 
-export const THEMES: Record<ThemeName, Theme> = {
-  dark: { bg: '#0E0E0D', unlit: '#201F1D', grey: '#8F8C85', ink: '#ECEAE5' },
-  light: { bg: '#ECEAE5', unlit: '#DDDBD6', grey: '#5C5954', ink: '#1E1E1C' },
-};
+/** Ink levels. 0 means unlit. Signal is the one Cadence red per slide. */
+export const enum Ink { Off = 0, Grey = 1, Ink = 2, Signal = 3 }
 
-/** Ink levels a lit dot can take. 0 means unlit. */
-export const enum Ink { Off = 0, Grey = 1, Ink = 2 }
+/** A character set in Doto or Inter, positioned in grid cells. scaleY drives the flip. */
+export interface GlyphDraw { ch: string; x: number; row: number; role: Role; ink: Ink; scaleY: number }
 
 /** Integer device pitch so dots stay crisp at any viewport. */
 export function devicePitch(vw: number, vh: number, dpr: number): number {
@@ -104,14 +103,17 @@ export class Renderer {
     return { x: x0 + col * pitch, y: y0 + row * pitch, w: cols * pitch - (pitch - this.geo.dot), h: rows * pitch - (pitch - this.geo.dot) };
   }
 
-  draw(frame: Frame, images: ImageLayer[] = []) {
+  private inkColor(level: Ink): string {
+    return level === Ink.Grey ? this.theme.grey : level === Ink.Signal ? this.theme.signal : this.theme.ink;
+  }
+
+  draw(frame: Frame, images: ImageLayer[] = [], glyphs: GlyphDraw[] = []) {
     const { ctx } = this;
     const { pitch, dot, x0, y0 } = this.geo;
     ctx.drawImage(this.screen, 0, 0);
     const r = dot / 2;
-    const colors = [null, this.theme.grey, this.theme.ink];
-    for (let level = 1; level <= 2; level++) {
-      ctx.fillStyle = colors[level]!;
+    for (let level = 1; level <= 3; level++) {
+      ctx.fillStyle = this.inkColor(level as Ink);
       ctx.beginPath();
       for (let i = 0; i < frame.ink.length; i++) {
         if (frame.ink[i] !== level) continue;
@@ -137,6 +139,26 @@ export class Renderer {
       ctx.globalAlpha = im.alpha;
       drawCover(ctx, im.img, rect.x, rect.y, rect.w, rect.h);
       ctx.globalAlpha = 1;
+    }
+    // type: Doto for display, Inter for everything else
+    ctx.textBaseline = 'alphabetic';
+    let font = '';
+    for (const g of glyphs) {
+      if (g.scaleY <= 0.02 || g.ch === ' ') continue;
+      const t = TYPE[g.role];
+      const f = `${t.weight} ${t.size * pitch}px ${t.family}, ${t.family === 'Doto' ? 'monospace' : 'system-ui, sans-serif'}`;
+      if (f !== font) { ctx.font = f; font = f; }
+      ctx.fillStyle = this.inkColor(g.ink);
+      const x = x0 + (g.x + nudge(g.ch, g.role)) * pitch;
+      const cap = capRows(g.role) * pitch;
+      const base = y0 + g.row * pitch + cap;
+      if (g.scaleY >= 0.999) { ctx.fillText(g.ch, x, base); continue; }
+      const mid = base - cap / 2;
+      ctx.save();
+      ctx.translate(0, mid);
+      ctx.scale(1, g.scaleY);
+      ctx.fillText(g.ch, x, base - mid);
+      ctx.restore();
     }
   }
 }
