@@ -1,6 +1,6 @@
 # Dot Board
 
-An animated dot-matrix presentation engine. The whole 16:9 slide is one dot screen, like an e-reader running a split-flap departures board. Text is never set in a font: it is written by lighting dots on a 384 x 216 grid, and headlines arrive with a split-flap animation where every changing dot flips like a disc.
+An animated dot-matrix presentation engine. The whole 16:9 slide is one dot screen, like an e-reader running a split-flap departures board. It runs on one design system: [Cadence Kit](https://github.com/julie-torrisi/cadence-kit) tokens for color, Doto for display type and Inter for everything else, laid out on a 384 x 216 dot grid. Headlines arrive with a split-flap animation and every changing character flips like a card.
 
 ![The boot slide flapping in](docs/boot.gif)
 
@@ -46,7 +46,7 @@ Slide templates:
 | `ask` | The AI icebreaker |
 | `eof` | Closing line and contact details |
 
-`npm run check path/to/deck.json` fails the build on em dashes, characters the board can't draw, text past the margin, missing alt text, or a departures status outside SHIPPED, LIVE, PUBLISHED, SUBMITTED, PROTOTYPE and IN PROGRESS.
+`npm run check path/to/deck.json` measures every line with the real font metrics and fails the build on em dashes, text past the margin, more than one red element on a slide, missing alt text, or a departures status outside SHIPPED, LIVE, PUBLISHED, SUBMITTED, PROTOTYPE and IN PROGRESS.
 
 ## Ask the Board
 
@@ -71,33 +71,36 @@ A slide where the audience types a prompt and the reply flaps onto the board.
 
 Every lit dot sits exactly on an unlit screen dot. To stay crisp at any size, the renderer picks an integer device pitch, `p = max(2, floor(min(vw*dpr/384, vh*dpr/216)))`, draws the grid at that pitch, and letterboxes the rest.
 
-| Token | Dark (primary) | Light |
-|---|---|---|
-| Background | #0E0E0D | #ECEAE5 |
-| Unlit dot | #201F1D | #DDDBD6 |
-| Grey (secondary text) | #8F8C85 | #5C5954 |
-| Ink (primary text) | #ECEAE5 | #1E1E1C |
+Colors are Cadence Kit alias tokens (`src/tokens.ts`):
 
-There is no accent color. Hierarchy comes from size, and from ink versus grey.
+| Role | Cadence Kit token | Dark (primary) | Light |
+|---|---|---|---|
+| Background | background.body / highEmphasis | #0b0c0c | #f7f8f8 |
+| Unlit dot | background.highEmphasis / body | #161918 | #e1e4e3 |
+| Grey (secondary text) | text.subtle | #9da3a1 | #5a605e |
+| Ink (primary text) | text.default | #f7f8f8 | #0b0c0c |
+| Signal | border.focusOutline | #ff5a60 | #d71921 |
+
+Hierarchy comes from size, and from ink versus grey. Red is the one signal per slide: by default the status block in the top left. The deck check fails a slide with more than one red element.
 
 ### Type
 
-Two bitmap faces in four sizes, each a whole multiple of the dot:
+Two families, four roles. Fonts ship with the deck (via Fontsource), so it works offline.
 
-| Role | Face | Scale | Height | Advance |
-|---|---|---|---|---|
-| Hero | 5x7 | x3 | 21 rows | 18 cells |
-| H1 | 5x7 | x2 | 14 rows | 12 cells |
-| Body | 5x7 | x1 | 7 rows | 6 cells |
-| Label | 3x5 | x1 | 5 rows | 4 cells |
+| Role | Font | Size (at 1080p) | Cap height | Advance | Case |
+|---|---|---|---|---|---|
+| Hero | Doto Bold | 150px | 21 rows | 18 cells, monospaced | Upper |
+| H1 | Doto Bold | 100px | 14 rows | 12 cells, monospaced | Upper |
+| Body | Inter Regular | 48px | 7 rows | proportional | As written |
+| Label | Inter Medium, +8% tracking | 28px | 4 rows | proportional | Upper |
 
-Text width in cells is `(chars x (glyphWidth + 1) - 1) x scale`. All text is uppercase, and unknown characters render blank.
+Doto Bold is monospaced at 0.6 em, so 100px and 150px land exactly on 12 and 18 cell advances. Inter digits are tabular, so page numbers and counters never shift. Widths come from the fonts' own metrics (`src/metrics.json`), so the browser, the tests and the deck check measure text the same way. The blinking cursor, progress bar, status block and screen stay real dots.
 
 ### Motion
 
 - **Slots.** Every character position is a slot keyed by role, column and row. Only slots whose character changes will flip, so the header stays still and the page number flips just the digit that changes.
 - **Flap.** A changing slot cycles 6 to 12 random glyphs at 78ms each, then lands on its target. Each slot starts after `(row / 216) x 260ms + charIndex x 34ms`.
-- **Dot flip.** Each changing dot flips around its horizontal axis, and the flip travels down the glyph row by row.
+- **Card flip.** Each changing character folds away and the next one unfolds, like a split-flap card. Doto display text cycles random glyphs first. Inter text flips once.
 - **Progress bar.** It fills one dot at a time, 2.5ms apart, and doubles as reading progress.
 - **Cursor.** Blinks every 530ms.
 - **Reduced motion.** With `prefers-reduced-motion`, slides swap instantly.

@@ -1,8 +1,8 @@
 // Deck data model. A deck is plain JSON, so one engine serves any company or talk.
 
-import type { Role } from './glyphs';
+import type { Role } from './tokens';
 
-export type InkName = 'ink' | 'grey';
+export type InkName = 'ink' | 'grey' | 'signal';
 export type Align = 'left' | 'right' | 'center';
 
 export interface TextItem { t: 'text'; role: Role; col: number; row: number; text: string; ink?: InkName; align?: Align; cursor?: boolean }

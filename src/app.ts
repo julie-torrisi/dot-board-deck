@@ -1,6 +1,6 @@
 // The deck controller: navigation, themes, presenter sync and the draw loop.
 
-import { Renderer, Frame, type ThemeName } from './grid';
+import { Renderer, Frame, type ThemeName, type GlyphDraw } from './grid';
 import { layoutSlide, progressLength } from './layout';
 import { slotsOf, blocksOf, imagesOf } from './board';
 import { FlapEngine } from './flap';
@@ -99,11 +99,12 @@ export class DeckApp {
       const t = performance.now();
       this.frame.clear();
       blocksOf(this.items, this.frame);
-      let moving = this.engine.render(this.frame, t);
+      const glyphs: GlyphDraw[] = [];
+      let moving = this.engine.render(this.frame, t, glyphs);
       const r = revealImages(this.frame, imagesOf(this.items), this.imageStart, t, this.engine.reduced);
       moving = r.moving || moving;
       if (this.hooks.overlay?.(this.frame, t)) moving = true;
-      this.renderer.draw(this.frame, r.layers);
+      this.renderer.draw(this.frame, r.layers, glyphs);
       const hasCursor = this.items.some((it) => it.t === 'text' && it.cursor) || this.items.some((it) => it.t === 'ask');
       if (moving) this.raf = requestAnimationFrame(loop);
       else if (hasCursor) this.raf = window.setTimeout(() => { this.raf = 0; this.kick(); }, 100) as unknown as number;

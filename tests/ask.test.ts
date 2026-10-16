@@ -9,10 +9,10 @@ describe('fitReply', () => {
     expect(lines.every((l) => l.length <= 23 && l === l.toUpperCase())).toBe(true);
   });
   it('removes em dashes and unsupported characters', () => {
-    expect(fitReply('calm \u2014 curious & kind')).toBe('CALM, CURIOUS KIND');
+    expect(fitReply('calm \u2014 curious & kind')).toBe('CALM, CURIOUS & KIND');
   });
   it('falls back to the canned reply when nothing is left', () => {
-    expect(fitReply('\u2014\u2014 @@@')).toBe(CANNED.replace(/\n/g, ''));
+    expect(fitReply('\u2014\u2014 \u{1F600}')).toBe(CANNED.replace(/\n/g, ''));
   });
 });
 

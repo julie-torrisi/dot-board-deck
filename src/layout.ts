@@ -1,7 +1,9 @@
 // Turns a slide spec into absolute, grid-aligned items, including the chrome.
 
 import { COLS, MARGIN, RIGHT } from './grid';
-import { textWidth, advance, wrap, type Role } from './glyphs';
+import { wrap } from './glyphs';
+import { textWidth, advance } from './type';
+import type { Role } from './tokens';
 import type { Deck, Item, SlideSpec, TextItem } from './deck';
 
 export const CONTENT_W = RIGHT - MARGIN; // 346 cells
@@ -13,7 +15,7 @@ const pad2 = (n: number) => String(n).padStart(2, '0');
 
 /** Resolve alignment to a left column. */
 export function startCol(item: TextItem): number {
-  const w = textWidth(item.text, item.role);
+  const w = item.cursor ? 10 : textWidth(item.text, item.role);
   if (item.align === 'right') return item.col - w;
   if (item.align === 'center') return item.col - Math.floor(w / 2);
   return item.col;
@@ -24,13 +26,13 @@ export function fits(role: Role, fromCol = MARGIN): number {
   return Math.floor((RIGHT - fromCol + 1) / advance(role));
 }
 
-const text = (role: Role, col: number, row: number, s: string, ink: 'ink' | 'grey' = 'ink', extra: Partial<TextItem> = {}): TextItem =>
+const text = (role: Role, col: number, row: number, s: string, ink: 'ink' | 'grey' | 'signal' = 'ink', extra: Partial<TextItem> = {}): TextItem =>
   ({ t: 'text', role, col, row, text: s, ink, ...extra });
 
 export function chrome(deck: Deck, slide: SlideSpec, index: number, total: number): Item[] {
   const pct = Math.round((100 * (index + 1)) / total);
   return [
-    { t: 'block', col: 19, row: 20, w: 3, h: 3, ink: 'ink' },
+    { t: 'block', col: 19, row: 20, w: 3, h: 3, ink: 'signal' },
     text('label', 26, 19, deck.brand),
     text('label', CENTER, 19, slide.label, 'grey', { align: 'center' }),
     text('label', RIGHT, 19, `PG ${pad2(index + 1)}/${pad2(total)}`, 'grey', { align: 'right' }),
@@ -167,7 +169,7 @@ export function overflow(deck: Deck): string[] {
       if (it.t !== 'text') continue;
       const c = startCol(it);
       const end = c + textWidth(it.text, it.role);
-      if (c < 0 || end > COLS || (end > RIGHT && it.align !== 'right')) {
+      if (c < 0 || end > COLS || (end > RIGHT + 0.5 && it.align !== 'right')) {
         warnings.push(`Slide ${i + 1} (${deck.slides[i].id}): "${it.text}" runs past the margin`);
       }
     }
