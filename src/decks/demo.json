@@ -1,0 +1,37 @@
+{
+  "brand": "DOT/BOARD",
+  "footer": "JULIE TORRISI-COFFEY",
+  "theme": "dark",
+  "bio": "Julie Torrisi-Coffey is a principal product designer with 20 years of experience, the last five at Meta on Facebook Comments, Creators and AI. Her work reaches 3 billion people and her design systems are used by 300+ designers. She builds in Figma, Claude Code, Cursor and SwiftUI.",
+  "offlineReplies": [
+    "SYSTEMS FIRST. SCREENS SECOND.",
+    "EVERY SIGNAL EARNS ITS INTERRUPTION.",
+    "RULES BEFORE THE PROMPT.",
+    "TASTE STAYS WITH THE DESIGNER.",
+    "SHIP THE SURVIVORS.",
+    "NO VISUAL IS A VALID ANSWER.",
+    "AI SUGGESTS. PEOPLE DECIDE.",
+    "ONE SYSTEM. EVERY SURFACE.",
+    "CRAFT AT 3 BILLION SCALE.",
+    "SIGNAL LOST. ASK AGAIN."
+  ],
+  "slides": [
+    { "id": "boot", "label": "BOOT SEQUENCE", "template": "boot", "kicker": "> SYSTEM READY", "lines": ["PRINCIPAL PRODUCT", "DESIGN"], "sub": "DESIGN SYSTEMS, 0 TO 1, AI PRODUCTS",
+      "notes": "Hi, I'm Julie. Principal product designer, 20 years in, the last five at Meta." },
+    { "id": "section", "label": "SECTION", "template": "section", "num": "01", "kicker": "SECTION 01", "title": "DESIGN SYSTEMS", "lines": ["THE VISUAL ASSET FRAMEWORK BEHIND", "SURFACES FOR 3B+ PEOPLE."],
+      "notes": "The Visual Asset Framework: one token-based system for brand, product and marketing at Facebook." },
+    { "id": "thesis", "label": "THESIS", "template": "statement", "prompt": true, "lines": ["SYSTEMS ARE HOW SMALL", "TEAMS SHIP AT SCALE."], "note": "// REPLACE WITH YOUR ONE LINE THESIS" },
+    { "id": "readout", "label": "READOUT", "template": "readout",
+      "stats": [{ "value": "3B+", "label": "PEOPLE REACHED" }, { "value": "05", "label": "YEARS AT META" }, { "value": "20", "label": "YEARS IN DESIGN" }],
+      "source": "SOURCE: RESUME 2026 / UPDATED: OCT 2026" },
+    { "id": "departures", "label": "DEPARTURES", "template": "departures",
+      "rows": [
+        { "code": "AST", "project": "ASSET SYSTEM", "status": "SHIPPED" },
+        { "code": "GSX", "project": "GOLDMAN SANS", "status": "SHIPPED" },
+        { "code": "CMT", "project": "COMMENTS", "status": "SHIPPED" },
+        { "code": "CAD", "project": "CADENCE", "status": "PROTOTYPE", "live": true }
+      ],
+      "notes": "AST: Visual Asset Framework, Facebook. GSX: Goldman Sans typeface, Goldman Sachs. CMT: Facebook Comments modernization. CAD: Cadence, my AI communications agent for Figma (concept prototype live, plugin in progress)." },
+    { "id": "eof", "label": "EOF", "template": "eof", "title": "END OF TRANSMISSION", "lines": ["JULIETORRISI.COM", "IN/JULIETORRISI / CALENDLY.COM/JULIETCO"] }
+  ]
+}
