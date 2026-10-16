@@ -23,7 +23,7 @@ export type Template =
   | { template: 'readout'; stats: Stat[]; source?: string }
   | { template: 'departures'; heads?: [string, string, string]; rows: Departure[] }
   | { template: 'image'; kicker?: string; title: string; image: Pic; caption?: string }
-  | { template: 'wall'; kicker?: string; title: string; images: Pic[]; caption?: string }
+  | { template: 'wall'; kicker?: string; title: string; images: Pic[]; caption?: string; columns?: number }
   | { template: 'eof'; title: string; lines: string[] }
   | { template: 'ask'; title?: string };
 
