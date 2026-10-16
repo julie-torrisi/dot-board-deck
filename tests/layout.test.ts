@@ -53,6 +53,15 @@ describe('wall', () => {
   });
 });
 
+describe('wall columns', () => {
+  it('puts portrait screens in one row when columns is set', () => {
+    const cells = wallCells(Array.from({ length: 7 }, (_, i) => ({ src: `${i}.png`, alt: '' })), 62, 116, 7);
+    const rows = new Set(cells.map((c) => (c.t === 'image' ? c.row : -1)));
+    expect(rows.size).toBe(1);
+    for (const c of cells) if (c.t === 'image') expect(c.col + c.cols).toBeLessThanOrEqual(365);
+  });
+});
+
 describe('overflow', () => {
   it('finds nothing in the demo deck', () => expect(overflow(deck)).toEqual([]));
   it('fits 28 H1 characters per line from the margin', () => expect(fits('h1')).toBe(28));

@@ -114,7 +114,7 @@ export function body(slide: SlideSpec): Item[] {
       const out: Item[] = [];
       if (s.kicker) out.push(text('label', 19, 34, s.kicker, 'grey'));
       out.push(text('h1', 19, 42, s.title));
-      out.push(...wallCells(s.images, 62, s.caption ? 116 : 124));
+      out.push(...wallCells(s.images, 62, s.caption ? 116 : 124, s.columns));
       if (s.caption) out.push(text('label', 19, 182, s.caption, 'grey'));
       return out;
     }
@@ -137,10 +137,11 @@ export function body(slide: SlideSpec): Item[] {
 }
 
 /** Lay out a grid of screens inside the content area, aligned to whole cells. */
-export function wallCells(images: { src: string; alt: string }[], top: number, height: number): Item[] {
+export function wallCells(images: { src: string; alt: string }[], top: number, height: number, columns?: number): Item[] {
   const n = images.length;
   if (!n) return [];
-  const perRow = n <= 3 ? n : n <= 8 ? Math.ceil(n / 2) : Math.ceil(n / 3);
+  // tall phone screens read best in one row: pass columns = number of screens
+  const perRow = columns ? Math.max(1, Math.min(columns, n)) : n <= 3 ? n : n <= 8 ? Math.ceil(n / 2) : Math.ceil(n / 3);
   const rowsN = Math.ceil(n / perRow);
   const gap = 3;
   const w = Math.floor((CONTENT_W - gap * (perRow - 1)) / perRow);

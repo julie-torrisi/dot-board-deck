@@ -42,7 +42,7 @@ Slide templates:
 | `readout` | Three big stats with labels and a source line |
 | `departures` | Four rows of code, project and status, like a departures board |
 | `image` | One real screen inside a grid-aligned frame. It dissolves in from dots. |
-| `wall` | A grid of real screens, for showing volume |
+| `wall` | A grid of real screens, for showing volume. Set `columns` to put tall phone screens in one row. |
 | `ask` | The AI icebreaker |
 | `eof` | Closing line and contact details |
 
