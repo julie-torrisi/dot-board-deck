@@ -37,5 +37,7 @@ export interface Deck {
   bio?: string;
   /** Offline icebreaker replies, used when the network is down. */
   offlineReplies?: string[];
+  /** Where the icebreaker sends prompts. Defaults to this site's api/ask. Private decks point at the public engine's. */
+  askEndpoint?: string;
   slides: SlideSpec[];
 }

@@ -32,7 +32,8 @@ export function revealImages(frame: Frame, items: ImageItem[], start: number, t:
   for (const it of items) {
     const img = load(it.src);
     const ready = img.complete && img.naturalWidth > 0;
-    if (!ready) moving = true;
+    const broken = img.complete && img.naturalWidth === 0;
+    if (!ready && !broken) moving = true;
     // phase 1: dots light up in a dissolve; phase 2: dots give way to the image
     const dotsOn = p < 0.5 ? p * 2 : 1 - (p - 0.5) * 2;
     if (dotsOn > 0 && p < 1) {

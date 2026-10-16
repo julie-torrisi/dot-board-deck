@@ -55,6 +55,7 @@ A slide where the audience types a prompt and the reply flaps onto the board.
 - `api/ask.ts` is a Vercel function that calls Claude (`claude-haiku-5-5` by default, override with `ASK_MODEL`).
 - The API key is read from the `ANTHROPIC_API_KEY` environment variable on the server. It is never in client code or this repo.
 - Input is capped at 120 characters, requests are rate limited per IP, and calls time out after 6 seconds. Any failure flaps a canned reply.
+- Private decks hosted elsewhere can share this endpoint: set `askEndpoint` in their `deck.json` to this site's `/api/ask`, and list their origins in `ASK_ALLOWED_ORIGINS` (comma separated). The key stays in one place.
 - With no network, or no API deployed, the slide cycles the deck's prewritten `offlineReplies`, so the live moment never dies.
 
 ## The spec

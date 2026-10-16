@@ -10,7 +10,7 @@ const params = new URLSearchParams(location.search);
 loadDeck().then((deck) => {
   if (params.has('presenter')) return startPresenter(deck);
   const app = new DeckApp(document.getElementById('board') as HTMLCanvasElement, deck);
-  const ice = new Icebreaker(app, deck);
+  const ice = new Icebreaker(app, deck, deck.askEndpoint);
   app.hooks.onEnter = (_i, items) => ice.enter(items);
   bindKeys(app);
   app.start();

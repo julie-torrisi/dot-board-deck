@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { FACE_5X7, FACE_3X5, glyph, textWidth, textHeight, advance, sanitize, wrap } from '../src/glyphs';
 
 describe('glyph tables', () => {
-  it('has the full 5x7 set from the spec', () => {
-    expect(FACE_5X7.glyphs.size).toBe(26 + 10 + 10);
+  it('has the 5x7 set from the spec, plus %', () => {
+    expect(FACE_5X7.glyphs.size).toBe(26 + 10 + 11);
   });
   it('has the full 3x5 set from the spec', () => {
     expect(FACE_3X5.glyphs.size).toBe(26 + 10 + 7);
@@ -39,7 +39,7 @@ describe('text math', () => {
 
 describe('sanitize and wrap', () => {
   it('uppercases and blanks unsupported characters', () => {
-    expect(sanitize('hi\u2014there @ 5%')).toBe('HI THERE   5 ');
+    expect(sanitize('hi\u2014there @ 5%')).toBe('HI THERE   5%');
   });
   it('wraps at 23 characters per line', () => {
     const lines = wrap('SYSTEMS ARE HOW SMALL TEAMS SHIP AT SCALE', 23);
