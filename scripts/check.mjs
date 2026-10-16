@@ -24,7 +24,16 @@ const fail = (file, msg) => { problems++; console.error(`  x ${file}: ${msg}`); 
 for (const file of files) {
   const raw = readFileSync(file, 'utf8');
   const deck = JSON.parse(raw);
-  for (const [re, what] of BANNED) if (re.test(raw)) fail(file, `contains ${what}`);
+  // banned phrases apply to what people read: every string except ids, file paths and endpoints
+  const visible = [];
+  const walk = (v, key) => {
+    if (typeof v === 'string') { if (!['id', 'src', 'askEndpoint'].includes(key)) visible.push(v); }
+    else if (Array.isArray(v)) v.forEach((x) => walk(x, key));
+    else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) walk(x, k);
+  };
+  walk(deck);
+  const text = visible.join('\n');
+  for (const [re, what] of BANNED) if (re.test(re.source.includes('op8') ? raw : text)) fail(file, `contains ${what}`);
   const check = (text, face, where, max) => {
     const set = face === 'label' ? F3 : F5;
     const bad = [...String(text).toUpperCase()].filter((c) => c !== ' ' && !set.includes(c));
