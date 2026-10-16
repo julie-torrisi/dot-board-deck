@@ -1,0 +1,20 @@
+{
+  "name": "dot-board-deck",
+  "version": "0.1.0",
+  "description": "An animated dot-matrix presentation engine. Every glyph is lit dots on a 384 x 216 grid, with split-flap transitions.",
+  "type": "module",
+  "license": "MIT",
+  "author": "Julie Torrisi-Coffey (https://julietorrisi.com)",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "check": "node scripts/check.mjs"
+  },
+  "devDependencies": {
+    "typescript": "5.6.3",
+    "vite": "5.4.10",
+    "vitest": "2.1.4"
+  }
+}
