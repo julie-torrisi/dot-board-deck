@@ -39,7 +39,7 @@ describe('text math', () => {
 
 describe('sanitize and wrap', () => {
   it('uppercases and blanks unsupported characters', () => {
-    expect(sanitize('hi—there @ 5%')).toBe('HI THERE   5 ');
+    expect(sanitize('hi\u2014there @ 5%')).toBe('HI THERE   5 ');
   });
   it('wraps at 23 characters per line', () => {
     const lines = wrap('SYSTEMS ARE HOW SMALL TEAMS SHIP AT SCALE', 23);
