@@ -14,7 +14,7 @@ const BANNED = [
   [/op8gczqfKp5jtVppMA5Zsh/, 'visual cover letter master link'],
 ];
 // characters each face can draw (spaces are always fine)
-const F5 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-.,>/:?!#';
+const F5 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789+-.,>/:?!#%';
 const F3 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/.-+:%>';
 const MAX = { hero: 19, h1: 28, body: 57, label: 86 };
 
@@ -46,6 +46,9 @@ for (const file of files) {
       case 'departures': s.rows.forEach((r) => {
         check(r.code, 'h1', at, 3); check(r.project, 'h1', at, 15); check(r.status, 'h1', at, 11);
         if (!STATUSES.includes(r.status)) fail(file, `${at}: status "${r.status}" must be one of ${STATUSES.join(', ')}`);
+        const projectEnd = 72 + (r.project.length * 6 - 1) * 2;
+        const statusStart = 365 - (r.status.length * 6 - 1) * 2;
+        if (projectEnd + 6 > statusStart) fail(file, `${at}: "${r.project}" runs into "${r.status}". Shorten one.`);
       }); break;
       case 'image': case 'wall':
         check(s.title, 'h1', at, MAX.h1); check(s.caption ?? '', 'label', at, MAX.label);
