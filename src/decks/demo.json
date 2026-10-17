@@ -1,24 +1,10 @@
 {
-  "brand": "DOT/BOARD",
-  "footer": "JULIE TORRISI-COFFEY",
+  "footer": "Julie Torrisi-Coffey · Principal Product Designer",
   "theme": "dark",
-  "bio": "Julie Torrisi-Coffey is a principal product designer with 20 years of experience, the last five at Meta on Facebook Comments, Creators and AI. Her work reaches 3 billion people and her design systems are used by 300+ designers. She builds in Figma, Claude Code, Cursor and SwiftUI.",
-  "offlineReplies": [
-    "SYSTEMS FIRST. SCREENS SECOND.",
-    "EVERY SIGNAL EARNS ITS INTERRUPTION.",
-    "RULES BEFORE THE PROMPT.",
-    "TASTE STAYS WITH THE DESIGNER.",
-    "SHIP THE SURVIVORS.",
-    "NO VISUAL IS A VALID ANSWER.",
-    "AI SUGGESTS. PEOPLE DECIDE.",
-    "ONE SYSTEM. EVERY SURFACE.",
-    "CRAFT AT 3 BILLION SCALE.",
-    "SIGNAL LOST. ASK AGAIN."
-  ],
   "slides": [
     {
       "id": "boot",
-      "label": "BOOT SEQUENCE",
+      "label": "Boot Sequence",
       "template": "boot",
       "kicker": "> SYSTEM READY",
       "lines": [
@@ -29,14 +15,8 @@
       "notes": "Hi, I'm Julie. Principal product designer, 20 years in, the last five at Meta."
     },
     {
-      "id": "ask",
-      "label": "ASK THE BOARD",
-      "template": "ask",
-      "notes": "Icebreaker. Invite them to type anything. Try: describe Julie in five words. If Wi-Fi drops, it falls back to prewritten replies."
-    },
-    {
       "id": "section",
-      "label": "SECTION",
+      "label": "Section",
       "template": "section",
       "num": "01",
       "kicker": "SECTION 01",
@@ -49,7 +29,7 @@
     },
     {
       "id": "thesis",
-      "label": "THESIS",
+      "label": "Thesis",
       "template": "statement",
       "prompt": true,
       "lines": [
@@ -60,7 +40,7 @@
     },
     {
       "id": "readout",
-      "label": "READOUT",
+      "label": "Readout",
       "template": "readout",
       "stats": [
         {
@@ -80,7 +60,7 @@
     },
     {
       "id": "departures",
-      "label": "DEPARTURES",
+      "label": "Departures",
       "template": "departures",
       "rows": [
         {
@@ -109,7 +89,7 @@
     },
     {
       "id": "eof",
-      "label": "EOF",
+      "label": "Eof",
       "template": "eof",
       "title": "END OF TRANSMISSION",
       "lines": [
@@ -117,5 +97,6 @@
         "IN/JULIETORRISI / CALENDLY.COM/JULIETCO"
       ]
     }
-  ]
+  ],
+  "site": "julietorrisi.com"
 }

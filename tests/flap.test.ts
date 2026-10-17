@@ -13,15 +13,15 @@ describe('slot diffing', () => {
   const b = slotsOf(layoutSlide(deck, 1));
   const { flip, keep } = diffSlots(a, b);
 
-  it('keeps the brand still', () => {
-    const brand = [...b.values()].filter((s) => s.row === 19 && s.x >= 26 && s.x < 70);
-    expect(brand.length).toBe(9);
-    for (const s of brand) expect(keep).toContain(s.key);
+  it('keeps the footer name still', () => {
+    const name = [...b.values()].filter((s) => s.row === 203 && s.x < 100);
+    expect(name.length).toBeGreaterThan(5);
+    for (const s of name) expect(keep).toContain(s.key);
   });
   it('flips only the changed page digit', () => {
-    const pg = [...b.values()].filter((s) => s.row === 19 && s.x > 300).sort((a, b) => a.x - b.x);
+    const pg = [...b.values()].filter((s) => s.row === 203 && s.x > 280).sort((a, b) => a.x - b.x);
     const flipped = pg.filter((s) => flip.includes(s.key)).map((s) => s.ch);
-    expect(pg.map((s) => s.ch).join('')).toBe('PG 02/07');
+    expect(pg.map((s) => s.ch).join('')).toBe('JULIETORRISI.COM·02');
     expect(flipped).toEqual(['2']);
   });
   it('flips slots that leave the slide to blank', () => {

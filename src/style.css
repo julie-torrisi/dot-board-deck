@@ -3,14 +3,13 @@
 html, body { margin: 0; height: 100%; background: var(--bg); overflow: hidden; }
 #board { display: block; width: 100vw; height: 100vh; cursor: pointer; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
-.hint { position: fixed; left: 50%; bottom: 3vh; transform: translateX(-50%); font: 500 12px/1 Inter, system-ui, sans-serif; letter-spacing: .08em; color: #9da3a1; transition: opacity .6s; pointer-events: none; }
+.hint { position: fixed; left: 50%; bottom: 3vh; transform: translateX(-50%); font: 500 12px/1 ui-monospace, monospace; letter-spacing: .08em; color: #9da3a1; transition: opacity .6s; pointer-events: none; }
 .hint.out { opacity: 0; }
-body.presenter { overflow: auto; color: #f7f8f8; font: 18px/1.5 Inter, system-ui, sans-serif; }
+body.presenter { overflow: auto; color: #f7f8f8; font: 18px/1.5 system-ui, sans-serif; }
 body.presenter main { padding: 32px; max-width: 760px; }
 body.presenter header, body.presenter footer { display: flex; justify-content: space-between; color: #9da3a1; font-size: 14px; letter-spacing: .08em; }
-body.presenter h1 { font-family: Doto, monospace; font-weight: 700; font-size: 32px; letter-spacing: .08em; margin: 24px 0 12px; }
+body.presenter h1 { font-family: ui-monospace, monospace; font-weight: 700; font-size: 32px; letter-spacing: .08em; margin: 24px 0 12px; }
 body.presenter p { font-family: system-ui, sans-serif; font-size: 22px; line-height: 1.5; white-space: pre-wrap; }
-.ask { position: fixed; box-sizing: border-box; background: transparent; border: 0; border-bottom: 1px solid #9da3a1; color: #f7f8f8; font-family: Inter, system-ui, sans-serif; font-weight: 400; letter-spacing: 0; outline: none; padding: 0; caret-color: #ff5a60; }
-.ask::placeholder { color: #9da3a1; }
-:root[data-theme="light"] .ask { color: #0b0c0c; caret-color: #0b0c0c; border-color: #5a605e; }
-:root[data-theme="light"] .ask::placeholder { color: #5a605e; }
+.links a { position: fixed; display: block; color: transparent; overflow: hidden; border-radius: 2px; outline-offset: 2px; }
+.links a:hover { background: rgba(157, 163, 161, .12); }
+.links a:focus-visible { outline: 2px solid #ff5a60; }

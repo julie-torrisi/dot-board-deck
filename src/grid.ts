@@ -5,15 +5,11 @@ export const ROWS = 216;
 export const MARGIN = 19; // content spans col 19 to col 364
 export const RIGHT = 365; // right-align edge (exclusive)
 
-import { THEMES, TYPE, type Theme, type ThemeName, type Role } from './tokens';
-import { capRows, nudge } from './type';
+import { THEMES, type Theme, type ThemeName } from './tokens';
 export { THEMES, type Theme, type ThemeName };
 
-/** Ink levels. 0 means unlit. Signal is the one Cadence red per slide. */
-export const enum Ink { Off = 0, Grey = 1, Ink = 2, Signal = 3 }
-
-/** A character set in Doto or Inter, positioned in grid cells. scaleY drives the flip. */
-export interface GlyphDraw { ch: string; x: number; row: number; role: Role; ink: Ink; scaleY: number }
+/** Ink levels. 0 means unlit. Signal is the one Cadence red per slide. Dim is for quiet chrome. */
+export const enum Ink { Off = 0, Grey = 1, Ink = 2, Signal = 3, Dim = 4 }
 
 /** Integer device pitch so dots stay crisp at any viewport. */
 export function devicePitch(vw: number, vh: number, dpr: number): number {
@@ -49,7 +45,7 @@ export class Frame {
   }
 }
 
-export interface ImageLayer { img: CanvasImageSource; col: number; row: number; cols: number; rows: number; alpha: number }
+export interface ImageLayer { img: CanvasImageSource; col: number; row: number; cols: number; rows: number; alpha: number; fit?: 'contain' | 'cover' }
 
 export class Renderer {
   private ctx: CanvasRenderingContext2D;
@@ -104,15 +100,15 @@ export class Renderer {
   }
 
   private inkColor(level: Ink): string {
-    return level === Ink.Grey ? this.theme.grey : level === Ink.Signal ? this.theme.signal : this.theme.ink;
+    return level === Ink.Grey ? this.theme.grey : level === Ink.Signal ? this.theme.signal : level === Ink.Dim ? this.theme.dim : this.theme.ink;
   }
 
-  draw(frame: Frame, images: ImageLayer[] = [], glyphs: GlyphDraw[] = []) {
+  draw(frame: Frame, images: ImageLayer[] = []) {
     const { ctx } = this;
     const { pitch, dot, x0, y0 } = this.geo;
     ctx.drawImage(this.screen, 0, 0);
     const r = dot / 2;
-    for (let level = 1; level <= 3; level++) {
+    for (let level = 1; level <= 4; level++) {
       ctx.fillStyle = this.inkColor(level as Ink);
       ctx.beginPath();
       for (let i = 0; i < frame.ink.length; i++) {
@@ -137,36 +133,23 @@ export class Renderer {
       if (im.alpha <= 0) continue;
       const rect = this.cellRect(im.col, im.row, im.cols, im.rows);
       ctx.globalAlpha = im.alpha;
-      drawCover(ctx, im.img, rect.x, rect.y, rect.w, rect.h);
+      drawCover(ctx, im.img, rect.x, rect.y, rect.w, rect.h, im.fit ?? 'contain');
       ctx.globalAlpha = 1;
-    }
-    // type: Doto for display, Inter for everything else
-    ctx.textBaseline = 'alphabetic';
-    let font = '';
-    for (const g of glyphs) {
-      if (g.scaleY <= 0.02 || g.ch === ' ') continue;
-      const t = TYPE[g.role];
-      const f = `${t.weight} ${t.size * pitch}px ${t.family}, ${t.family === 'Doto' ? 'monospace' : 'system-ui, sans-serif'}`;
-      if (f !== font) { ctx.font = f; font = f; }
-      ctx.fillStyle = this.inkColor(g.ink);
-      const x = x0 + (g.x + nudge(g.ch, g.role)) * pitch;
-      const cap = capRows(g.role) * pitch;
-      const base = y0 + g.row * pitch + cap;
-      if (g.scaleY >= 0.999) { ctx.fillText(g.ch, x, base); continue; }
-      const mid = base - cap / 2;
-      ctx.save();
-      ctx.translate(0, mid);
-      ctx.scale(1, g.scaleY);
-      ctx.fillText(g.ch, x, base - mid);
-      ctx.restore();
     }
   }
 }
 
-function drawCover(ctx: CanvasRenderingContext2D, img: CanvasImageSource, x: number, y: number, w: number, h: number) {
+function drawCover(ctx: CanvasRenderingContext2D, img: CanvasImageSource, x: number, y: number, w: number, h: number, fit: 'contain' | 'cover') {
   const iw = (img as HTMLImageElement).naturalWidth || (img as HTMLCanvasElement).width;
   const ih = (img as HTMLImageElement).naturalHeight || (img as HTMLCanvasElement).height;
   if (!iw || !ih) return;
+  if (fit === 'cover') {
+    // photos fill their frame, cropped from the center
+    const s = Math.max(w / iw, h / ih);
+    const sw = w / s, sh = h / s;
+    ctx.drawImage(img, (iw - sw) / 2, (ih - sh) / 2, sw, sh, x, y, w, h);
+    return;
+  }
   // contain, centered, so screens are never cropped
   const s = Math.min(w / iw, h / ih);
   const dw = iw * s, dh = ih * s;

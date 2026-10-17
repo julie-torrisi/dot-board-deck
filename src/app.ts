@@ -1,8 +1,8 @@
 // The deck controller: navigation, themes, presenter sync and the draw loop.
 
-import { Renderer, Frame, type ThemeName, type GlyphDraw } from './grid';
-import { layoutSlide, progressLength } from './layout';
-import { slotsOf, blocksOf, imagesOf } from './board';
+import { Renderer, Frame, type ThemeName } from './grid';
+import { layoutSlide, progressLength, QUOTE_MS } from './layout';
+import { slotsOf, staticsOf, imagesOf, linksOf } from './board';
 import { FlapEngine } from './flap';
 import { revealImages, load } from './reveal';
 import type { Deck, Item } from './deck';
@@ -16,6 +16,9 @@ export class DeckApp {
   private items: Item[] = [];
   /** Live items added to the current slide, such as an icebreaker reply. */
   private extra: Item[] = [];
+  private quote = 0;
+  private quoteTimer = 0;
+  private links = document.createElement('nav');
   private imageStart = 0;
   private raf = 0;
   index = -1;
@@ -37,7 +40,10 @@ export class DeckApp {
     this.renderer.resize();
     // preload every screen so walls never pop in late
     for (const s of this.deck.slides) for (const it of layoutSlideSafe(this.deck, s.id)) if (it.t === 'image') load(it.src);
-    addEventListener('resize', () => { this.renderer.resize(); this.kick(); });
+    this.links.className = 'links';
+    this.links.setAttribute('aria-label', 'Links on this slide');
+    document.body.append(this.links);
+    addEventListener('resize', () => { this.renderer.resize(); this.placeLinks(); this.kick(); });
     addEventListener('hashchange', () => this.go(this.fromHash(), false));
     this.go(this.fromHash(), false);
   }
@@ -46,10 +52,11 @@ export class DeckApp {
 
   go(i: number, updateHash = true) {
     const index = Math.max(0, Math.min(this.total - 1, i));
-    if (index !== this.index) this.extra = [];
+    if (index !== this.index) { this.extra = []; this.quote = 0; }
     this.index = index;
     this.hooks.onEnter?.(index, layoutSlide(this.deck, index));
-    this.items = [...layoutSlide(this.deck, index), ...this.extra];
+    this.items = [...layoutSlide(this.deck, index, this.quote), ...this.extra];
+    this.startCarousel();
     const now = performance.now();
     this.engine.goto(slotsOf(this.items), progressLength(index, this.total), now);
     this.imageStart = now + (this.engine.reduced ? 0 : 260);
@@ -57,7 +64,39 @@ export class DeckApp {
     const sr = document.getElementById('sr');
     if (sr) sr.textContent = srText(this.items);
     this.broadcast();
+    this.placeLinks();
     this.kick();
+  }
+
+  /** Ending slides rotate testimonials; each change flaps like any other text. */
+  private startCarousel() {
+    clearInterval(this.quoteTimer);
+    const s = this.deck.slides[this.index];
+    if (s.template !== 'thanks' || s.quotes.length < 2) return;
+    this.quoteTimer = window.setInterval(() => {
+      this.quote = (this.quote + 1) % (s.template === 'thanks' ? s.quotes.length : 1);
+      this.items = [...layoutSlide(this.deck, this.index, this.quote), ...this.extra];
+      this.engine.goto(slotsOf(this.items), progressLength(this.index, this.total), performance.now());
+      this.kick();
+    }, QUOTE_MS);
+  }
+
+  /** Real links over the board, so press and case study links are clickable and reachable by keyboard. */
+  private placeLinks() {
+    this.links.replaceChildren();
+    const geo = this.renderer.geo;
+    if (!geo) return;
+    const dpr = window.devicePixelRatio || 1;
+    for (const l of linksOf(this.items)) {
+      const r = this.renderer.cellRect(l.col, l.row, l.cols, l.rows);
+      const a = document.createElement('a');
+      a.href = l.href;
+      a.target = '_blank';
+      a.rel = 'noopener';
+      a.textContent = l.label;
+      Object.assign(a.style, { left: `${r.x / dpr}px`, top: `${r.y / dpr}px`, width: `${r.w / dpr}px`, height: `${r.h / dpr}px` });
+      this.links.append(a);
+    }
   }
 
   /** Replace the live items on the current slide; changed slots flap. */
@@ -98,14 +137,13 @@ export class DeckApp {
       this.raf = 0;
       const t = performance.now();
       this.frame.clear();
-      blocksOf(this.items, this.frame);
-      const glyphs: GlyphDraw[] = [];
-      let moving = this.engine.render(this.frame, t, glyphs);
+      staticsOf(this.items, this.frame);
+      let moving = this.engine.render(this.frame, t);
       const r = revealImages(this.frame, imagesOf(this.items), this.imageStart, t, this.engine.reduced);
       moving = r.moving || moving;
       if (this.hooks.overlay?.(this.frame, t)) moving = true;
-      this.renderer.draw(this.frame, r.layers, glyphs);
-      const hasCursor = this.items.some((it) => it.t === 'text' && it.cursor) || this.items.some((it) => it.t === 'ask');
+      this.renderer.draw(this.frame, r.layers);
+      const hasCursor = this.items.some((it) => it.t === 'text' && it.cursor);
       if (moving) this.raf = requestAnimationFrame(loop);
       else if (hasCursor) this.raf = window.setTimeout(() => { this.raf = 0; this.kick(); }, 100) as unknown as number;
     };

@@ -1,9 +1,10 @@
-// Split-flap characters. Display text (Doto) cycles random glyphs before landing; every
-// changing character flips like a card: the old one folds away, the new one unfolds.
+// Split-flap characters. Display type cycles random glyphs before landing; every changing
+// character flips like a flip-disc board: its dots fold away, then the new dots unfold.
 
-import { Frame, Ink, ROWS, type GlyphDraw } from './grid';
+import { Frame, Ink, ROWS } from './grid';
 import { TYPE, type Role } from './tokens';
-import { drawCursor, type Slot } from './board';
+import { drawChar, type Slot } from './board';
+import { PROGRESS, MARGIN_L } from './layout';
 
 export const STEP = 78; // ms per glyph change
 export const FLAP_MIN = 6;
@@ -80,8 +81,8 @@ export class FlapEngine {
       const from = prevAnim ? showing(prevAnim, now) : p ? { ch: p.ch, ink: p.ink } : { ch: ' ', ink: Ink.Ink };
       const src = n ?? p!;
       const to: Face = n ? { ch: n.ch, ink: n.ink } : { ch: ' ', ink: from.ink };
-      // display type cycles like a split-flap board; Inter just flips once
-      const cycles = TYPE[src.role].mono && !src.cursor && from.ch !== to.ch && to.ch !== ' ';
+      // display type cycles like a split-flap board; body and labels just flip once
+      const cycles = TYPE[src.role].cycles && !src.cursor && from.ch !== to.ch && to.ch !== ' ';
       const seq = this.reduced || !cycles ? [to.ch] : flapSequence(to.ch);
       const start = this.reduced ? now - STEP * 2 : now + startDelay(src.row, n?.index ?? p?.index ?? 0);
       this.anims.set(key, { role: src.role, x: src.x, row: src.row, cursor: src.cursor, from, to, seq, start });
@@ -110,13 +111,12 @@ export class FlapEngine {
     return to > from ? Math.min(to, from + moved) : Math.max(to, from - moved);
   }
 
-  /** Draw dots into the frame and collect type into glyphs. Returns true while anything moves. */
-  render(frame: Frame, t: number, glyphs: GlyphDraw[] = []): boolean {
+  /** Draw every character as lit dots. Returns true while anything moves. */
+  render(frame: Frame, t: number): boolean {
     let moving = false;
     const put = (a: Anim, f: Face, scaleY: number) => {
       if (f.ch === ' ') return;
-      if (a.cursor) drawCursor(frame, a.x, a.row, f.ink, scaleY);
-      else glyphs.push({ ch: f.ch, x: a.x, row: a.row, role: a.role, ink: f.ink, scaleY });
+      drawChar(frame, a.role, f.ch, a.x, a.row, f.ink, scaleY, a.cursor);
     };
     for (const a of this.anims.values()) {
       const e = t - a.start;
@@ -138,7 +138,7 @@ export class FlapEngine {
       put(a, f.face === 'old' ? prev : cur, f.scale);
     }
     const p = this.progressAt(t);
-    for (let i = 0; i < p; i++) frame.set(19 + i, 192, Ink.Ink);
+    for (let i = 0; i < p; i++) frame.set(MARGIN_L + i, PROGRESS.row, Ink.Dim);
     if (p !== this.progress.to) moving = true;
     return moving;
   }
