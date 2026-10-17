@@ -41,7 +41,7 @@ export function revealImages(frame: Frame, items: ImageItem[], start: number, t:
         if (hash(it.col + c, it.row + r) < dotsOn) frame.set(it.col + c, it.row + r, Ink.Grey);
       }
     }
-    if (ready && p > 0.5) layers.push({ img, col: it.col, row: it.row, cols: it.cols, rows: it.rows, alpha: Math.min(1, (p - 0.5) * 2) });
+    if (ready && p > 0.5) layers.push({ img, col: it.col, row: it.row, cols: it.cols, rows: it.rows, alpha: Math.min(1, (p - 0.5) * 2), fit: it.fit });
   }
   if (p < 1 && items.length) moving = true;
   return { layers, moving };

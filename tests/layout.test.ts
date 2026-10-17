@@ -1,21 +1,16 @@
 import { describe, it, expect } from 'vitest';
-import { chrome, layoutSlide, startCol, progressLength, wallCells, overflow, fits } from '../src/layout';
+import { chrome, startCol, progressLength, wallCells, overflow, fits, extras, quoteItems } from '../src/layout';
 import { textWidth } from '../src/type';
-import type { Deck, TextItem } from '../src/deck';
+import type { Deck, TextItem, SlideSpec } from '../src/deck';
 import demo from '../src/decks/demo.json';
 
 const deck = demo as Deck;
 
 describe('chrome', () => {
-  it('places the page number right-aligned to col 365', () => {
-    const items = chrome(deck, deck.slides[0], 0, 6) as TextItem[];
-    const pg = items.find((i) => i.t === 'text' && i.text.startsWith('PG'))!;
-    expect(pg.text).toBe('PG 01/06');
-    expect(startCol(pg) + textWidth(pg.text, 'label')).toBeCloseTo(365);
-  });
-  it('reads 100% on the last slide', () => {
-    const items = chrome(deck, deck.slides[0], 5, 6) as TextItem[];
-    expect(items.some((i) => i.t === 'text' && i.text === '100% READ')).toBe(true);
+  it('puts the site and page number right-aligned to col 365', () => {
+    const items = chrome(deck, deck.slides[0], 2, 6) as TextItem[];
+    const pg = items.find((i) => i.t === 'text' && i.text.endsWith('· 03'))!;
+    expect(startCol(pg) + textWidth(pg.text, 'label')).toBe(365);
   });
   it('fills the progress bar to 346 on the last slide', () => {
     expect(progressLength(5, 6)).toBe(346);
@@ -23,21 +18,26 @@ describe('chrome', () => {
   });
 });
 
-describe('spec positions', () => {
-  it('puts the boot cursor at col 91, row 106', () => {
-    const cursor = layoutSlide(deck, 0).find((i) => i.t === 'text' && i.cursor) as TextItem;
-    expect([cursor.col, cursor.row]).toEqual([91, 106]);
+describe('extras', () => {
+  it('puts the why line in red above the links', () => {
+    const s = { ...deck.slides[1], why: 'Why it matters: one line.', see: [{ label: 'Case study', href: 'https://example.com' }] } as SlideSpec;
+    const { items, top } = extras(s);
+    const why = items.find((i) => i.t === 'text' && i.ink === 'signal') as TextItem;
+    const link = items.find((i) => i.t === 'link');
+    expect(why).toBeTruthy();
+    expect(link).toBeTruthy();
+    expect(top).toBeLessThan(why.row);
   });
-  it('puts the EOF cursor at col 247, row 82', () => {
-    const last = deck.slides.findIndex((s) => s.template === 'eof');
-    const cursor = layoutSlide(deck, last).find((i) => i.t === 'text' && i.cursor) as TextItem;
-    expect([cursor.col, cursor.row]).toEqual([247, 82]);
-  });
-  it('right-aligns departure statuses to col 365', () => {
-    const i = deck.slides.findIndex((s) => s.template === 'departures');
-    const statuses = layoutSlide(deck, i).filter((it) => it.t === 'text' && it.role === 'h1' && it.align === 'right') as TextItem[];
-    expect(statuses.length).toBe(4);
-    for (const s of statuses) expect(startCol(s) + textWidth(s.text, 'h1')).toBeCloseTo(365);
+});
+
+describe('carousel', () => {
+  it('shows one quote at a time with position dots', () => {
+    const q = [{ quote: 'One.', by: 'A' }, { quote: 'Two.', by: 'B' }];
+    const a = quoteItems(q, 0).filter((i) => i.t === 'text') as TextItem[];
+    const b = quoteItems(q, 1).filter((i) => i.t === 'text') as TextItem[];
+    expect(a[0].text).toBe('One.');
+    expect(b[0].text).toBe('Two.');
+    expect(quoteItems(q, 0).filter((i) => i.t === 'block').length).toBe(2);
   });
 });
 
@@ -64,5 +64,9 @@ describe('wall columns', () => {
 
 describe('overflow', () => {
   it('finds nothing in the demo deck', () => expect(overflow(deck)).toEqual([]));
-  it('fits 28 H1 characters per line from the margin', () => expect(fits('h1')).toBe(28));
+  it('fits 29 H1 characters per line from the margin', () => expect(fits('h1')).toBe(29));
+  it('flags text that runs into the bottom band', () => {
+    const d = { ...deck, slides: [{ id: 'x', label: 'X', template: 'cards', title: 'T', lead: 'word '.repeat(200), cards: [] }] } as unknown as Deck;
+    expect(overflow(d).length).toBeGreaterThan(0);
+  });
 });

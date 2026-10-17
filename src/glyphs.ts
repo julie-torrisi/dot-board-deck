@@ -1,54 +1,10 @@
-// Bitmap faces. Rows top to bottom, 1 = lit. Unknown characters render blank.
+// Dot faces. Every character is a bitmap of lit dots; nothing on the board is drawn with a font at runtime.
+// - doto: Doto sampled on its own 5 x 9 dot grid (7 cap rows + 2 descender rows), see src/glyphs.json.
+// - mini: a 3 x 5 face for labels and chrome (uppercase).
 
-const F5X7 = `
-A 01110 10001 10001 10001 11111 10001 10001
-B 11110 10001 10001 11110 10001 10001 11110
-C 01110 10001 10000 10000 10000 10001 01110
-D 11100 10010 10001 10001 10001 10010 11100
-E 11111 10000 10000 11110 10000 10000 11111
-F 11111 10000 10000 11110 10000 10000 10000
-G 01110 10001 10000 10111 10001 10001 01111
-H 10001 10001 10001 11111 10001 10001 10001
-I 01110 00100 00100 00100 00100 00100 01110
-J 00111 00010 00010 00010 00010 10010 01100
-K 10001 10010 10100 11000 10100 10010 10001
-L 10000 10000 10000 10000 10000 10000 11111
-M 10001 11011 10101 10101 10001 10001 10001
-N 10001 10001 11001 10101 10011 10001 10001
-O 01110 10001 10001 10001 10001 10001 01110
-P 11110 10001 10001 11110 10000 10000 10000
-Q 01110 10001 10001 10001 10101 10010 01101
-R 11110 10001 10001 11110 10100 10010 10001
-S 01111 10000 10000 01110 00001 00001 11110
-T 11111 00100 00100 00100 00100 00100 00100
-U 10001 10001 10001 10001 10001 10001 01110
-V 10001 10001 10001 10001 10001 01010 00100
-W 10001 10001 10001 10101 10101 10101 01010
-X 10001 10001 01010 00100 01010 10001 10001
-Y 10001 10001 10001 01010 00100 00100 00100
-Z 11111 00001 00010 00100 01000 10000 11111
-0 01110 10001 10011 10101 11001 10001 01110
-1 00100 01100 00100 00100 00100 00100 01110
-2 01110 10001 00001 00010 00100 01000 11111
-3 11111 00010 00100 00010 00001 10001 01110
-4 00010 00110 01010 10010 11111 00010 00010
-5 11111 10000 11110 00001 00001 10001 01110
-6 00110 01000 10000 11110 10001 10001 01110
-7 11111 00001 00010 00100 01000 01000 01000
-8 01110 10001 10001 01110 10001 10001 01110
-9 01110 10001 10001 01111 00001 00010 01100
-+ 00000 00100 00100 11111 00100 00100 00000
-- 00000 00000 00000 11111 00000 00000 00000
-. 00000 00000 00000 00000 00000 01100 01100
-, 00000 00000 00000 00000 01100 00100 01000
-> 10000 01000 00100 00010 00100 01000 10000
-/ 00000 00001 00010 00100 01000 10000 00000
-: 00000 01100 01100 00000 01100 01100 00000
-? 01110 10001 00001 00010 00100 00000 00100
-! 00100 00100 00100 00100 00100 00000 00100
-% 11000 11001 00010 00100 01000 10011 00011
-# 11111 11111 11111 11111 11111 11111 11111
-`;
+import dotoTable from './glyphs.json';
+import iconTable from './icons.json';
+import { TYPE, type Role } from './tokens';
 
 const F3X5 = `
 A 010 101 111 101 101
@@ -89,84 +45,106 @@ Z 111 001 010 100 111
 9 111 101 111 001 110
 / 001 001 010 100 100
 . 000 000 000 000 010
+, 000 000 000 010 100
 - 000 000 111 000 000
 + 000 010 111 010 000
 : 000 010 000 010 000
+; 000 010 000 010 100
 % 101 001 010 100 101
 > 100 010 001 010 100
+< 001 010 100 010 001
+& 010 101 010 101 011
+' 010 010 000 000 000
+" 101 101 000 000 000
+( 001 010 010 010 001
+) 100 010 010 010 100
+? 110 001 010 000 010
+! 010 010 010 000 010
+· 000 000 010 000 000
+@ 111 101 111 100 011
+$ 011 110 010 011 110
+# 101 111 101 111 101
+* 000 101 010 101 000
+= 000 111 000 111 000
+_ 000 000 000 000 111
+→ 000 010 111 010 000
 `;
 
-export interface Face { w: number; h: number; glyphs: Map<string, boolean[][]> }
+export interface Bitmap { w: number; h: number; rows: boolean[][] }
 
-function parse(src: string, w: number, h: number): Face {
-  const glyphs = new Map<string, boolean[][]>();
+function parseMini(src: string): Map<string, Bitmap> {
+  const out = new Map<string, Bitmap>();
   for (const line of src.trim().split('\n')) {
     const [ch, ...rows] = line.trim().split(/\s+/);
-    if (rows.length !== h || rows.some((r) => r.length !== w)) throw new Error(`Bad glyph ${ch}`);
-    glyphs.set(ch, rows.map((r) => [...r].map((b) => b === '1')));
+    if (rows.length !== 5 || rows.some((r) => r.length !== 3)) throw new Error(`Bad glyph ${ch}`);
+    out.set(ch, { w: 3, h: 5, rows: rows.map((r) => [...r].map((b) => b === '1')) });
   }
-  return { w, h, glyphs };
+  return out;
 }
 
-export const FACE_5X7 = parse(F5X7, 5, 7);
-export const FACE_3X5 = parse(F3X5, 3, 5);
-
-export type Role = 'hero' | 'h1' | 'body' | 'label';
-
-export const ROLES: Record<Role, { face: Face; scale: number }> = {
-  hero: { face: FACE_5X7, scale: 3 },
-  h1: { face: FACE_5X7, scale: 2 },
-  body: { face: FACE_5X7, scale: 1 },
-  label: { face: FACE_3X5, scale: 1 },
-};
-
-/** Glyph bitmap, or null for blank (space and unknown characters). */
-export function glyph(face: Face, ch: string): boolean[][] | null {
-  return face.glyphs.get(ch.toUpperCase()) ?? null;
+const B32 = '0123456789abcdefghijklmnopqrstuv';
+function parseDoto(table: Record<string, string>): Map<string, Bitmap> {
+  const out = new Map<string, Bitmap>();
+  for (const [ch, code] of Object.entries(table)) {
+    if (ch === '_about') continue;
+    const rows = [...code].map((c) => { const v = B32.indexOf(c); return [16, 8, 4, 2, 1].map((b) => (v & b) !== 0); });
+    out.set(ch, { w: 5, h: 9, rows });
+  }
+  return out;
 }
 
-/** Cells advanced per character, including the 1-cell gap. */
-export function advance(role: Role): number {
-  const { face, scale } = ROLES[role];
-  return (face.w + 1) * scale;
+const MINI = parseMini(F3X5);
+const DOTO = parseDoto(dotoTable as Record<string, string>);
+
+/** Typographic quotes and dashes fold to what each face has. */
+const FOLD: Record<string, string> = { '’': "'", '‘': "'", '“': '"', '”': '"', '–': '-', '—': '-', '…': '...' };
+
+/** Glyph bitmap for a role, or null for a blank (space or unknown). */
+export function bitmap(role: Role, ch: string): Bitmap | null {
+  const c = FOLD[ch] ?? ch;
+  if (TYPE[role].face === 'mini') return MINI.get(c.toUpperCase()) ?? null;
+  return DOTO.get(c) ?? DOTO.get(c.toUpperCase()) ?? null;
 }
 
-/** Text width in cells = (chars x (glyphWidth + 1) - 1) x scale. */
-export function textWidth(text: string, role: Role): number {
-  if (!text.length) return 0;
-  const { face, scale } = ROLES[role];
-  return (text.length * (face.w + 1) - 1) * scale;
+/** The characters a role can draw (for sanitizing and the deck check). */
+export function canDraw(role: Role, ch: string): boolean {
+  return ch === ' ' || bitmap(role, ch) !== null;
 }
 
-export function textHeight(role: Role): number {
-  const { face, scale } = ROLES[role];
-  return face.h * scale;
+/** The cursor: a solid 5 x 7 block in the role's dot scale. */
+export const CURSOR: Bitmap = { w: 5, h: 7, rows: Array.from({ length: 7 }, () => Array(5).fill(true)) };
+
+/** Dot icons from the Figma kit: 15 x 15. Name with a trailing * is the Fill style. */
+export function icon(name: string): Bitmap | null {
+  const hex = (iconTable as Record<string, string>)[name];
+  if (!hex || name === '_about') return null;
+  const rows: boolean[][] = [];
+  for (let i = 0; i < 15; i++) {
+    const v = parseInt(hex.slice(i * 4, i * 4 + 4), 16);
+    rows.push(Array.from({ length: 15 }, (_, x) => (v & (1 << (14 - x))) !== 0));
+  }
+  return { w: 15, h: 15, rows };
 }
 
-/** The characters a 5x7 role can show. Used to sanitize AI replies. */
-export const CHARSET_5X7 = new Set([...FACE_5X7.glyphs.keys(), ' ']);
-
-/** Uppercase and replace unsupported characters with blanks. */
-export function sanitize(text: string, role: Role = 'h1'): string {
-  const face = ROLES[role].face;
-  return [...text.toUpperCase()].map((c) => (c === ' ' || face.glyphs.has(c) ? c : ' ')).join('');
-}
+export const ICON_NAMES = Object.keys(iconTable).filter((k) => k !== '_about');
 
 /** Greedy word wrap to a fixed number of characters per line. */
 export function wrap(text: string, perLine: number, maxLines = Infinity): string[] {
-  const words = text.trim().split(/\s+/).filter(Boolean);
-  const lines: string[] = [];
-  let cur = '';
-  for (let word of words) {
-    while (word.length > perLine) {
-      if (cur) { lines.push(cur); cur = ''; }
-      lines.push(word.slice(0, perLine));
-      word = word.slice(perLine);
+  const out: string[] = [];
+  for (const para of text.split('\n')) {
+    const words = para.trim().split(/\s+/).filter(Boolean);
+    let cur = '';
+    for (let word of words) {
+      while (word.length > perLine) {
+        if (cur) { out.push(cur); cur = ''; }
+        out.push(word.slice(0, perLine));
+        word = word.slice(perLine);
+      }
+      if (!cur) cur = word;
+      else if (cur.length + 1 + word.length <= perLine) cur += ' ' + word;
+      else { out.push(cur); cur = word; }
     }
-    if (!cur) cur = word;
-    else if (cur.length + 1 + word.length <= perLine) cur += ' ' + word;
-    else { lines.push(cur); cur = word; }
+    if (cur) out.push(cur);
   }
-  if (cur) lines.push(cur);
-  return lines.slice(0, maxLines);
+  return out.slice(0, maxLines);
 }

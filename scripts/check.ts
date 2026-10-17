@@ -2,8 +2,9 @@
 // so "fits" here means fits on screen. Usage: npm run check [path/to/deck.json ...]
 
 import { readFileSync } from 'node:fs';
-import { layoutSlide, overflow } from '../src/layout';
+import { body, overflow } from '../src/layout';
 import { textWidth } from '../src/type';
+import { ICON_NAMES } from '../src/glyphs';
 import type { Deck } from '../src/deck';
 
 const files = process.argv.slice(2).length ? process.argv.slice(2) : ['src/decks/demo.json'];
@@ -26,7 +27,7 @@ for (const file of files) {
   // banned phrases apply to what people read: every string except ids, file paths and endpoints
   const visible: string[] = [];
   const walk = (v: unknown, key = '') => {
-    if (typeof v === 'string') { if (!['id', 'src', 'askEndpoint'].includes(key)) visible.push(v); }
+    if (typeof v === 'string') { if (!['id', 'src', 'thumb', 'href'].includes(key)) visible.push(v); }
     else if (Array.isArray(v)) v.forEach((x) => walk(x, key));
     else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) walk(x, k);
   };
@@ -43,11 +44,11 @@ for (const file of files) {
       if (!STATUSES.includes(r.status)) fail(file, `${at}: status "${r.status}" must be one of ${STATUSES.join(', ')}`);
       if (72 + textWidth(r.project, 'h1') + 6 > 365 - textWidth(r.status, 'h1')) fail(file, `${at}: "${r.project}" runs into "${r.status}". Shorten one.`);
     }
-    if (s.template === 'image' || s.template === 'wall') {
-      for (const im of s.template === 'image' ? [s.image] : s.images) if (!im?.alt) fail(file, `${at}: every image needs alt text`);
-    }
-    // one red signal per slide: the status block is it, so content can't add another
-    const reds = layoutSlide(deck, i).filter((it) => (it.t === 'text' || it.t === 'block') && it.ink === 'signal').length;
+    const pics = s.template === 'image' ? [s.image] : s.template === 'wall' ? s.images : s.template === 'about' ? s.photos : s.template === 'intro' ? [s.image] : [];
+    for (const im of pics) if (!im?.alt) fail(file, `${at}: every image needs alt text`);
+    for (const c of s.template === 'cards' ? s.cards : []) if (c.icon && !ICON_NAMES.includes(c.icon)) fail(file, `${at}: unknown icon "${c.icon}"`);
+    // one red signal per slide: the why line counts as one, however many lines it wraps to
+    const reds = body(s).filter((it) => (it.t === 'text' || it.t === 'block' || it.t === 'icon') && it.ink === 'signal').length + (s.why ? 1 : 0);
     if (reds > 1) fail(file, `${at}: more than one red signal. Keep red to one thing per slide.`);
   });
 }

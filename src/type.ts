@@ -1,65 +1,44 @@
-// Text measurement from real font metrics (generated from the Doto and Inter font files),
-// so layout is identical in the browser, in tests and in the deck check.
+// Text measurement. Both faces are monospaced on the dot grid, so every position is a whole cell.
 
-import metrics from './metrics.json';
 import { TYPE, type Role } from './tokens';
-
-type Table = { capHeight: number; widths: Record<string, number> };
-const M = metrics as Record<string, Table>;
-
-function table(role: Role): Table {
-  const t = TYPE[role];
-  return t.family === 'Doto' ? M.doto700 : t.weight >= 500 ? M.inter500 : M.inter400;
-}
 
 export function display(text: string, role: Role): string {
   return TYPE[role].upper ? text.toUpperCase() : text;
 }
 
-const DIGIT = /[0-9]/;
+/** Dot columns per glyph before the gap, in face dots. */
+const faceW = (role: Role) => (TYPE[role].face === 'mini' ? 3 : 5);
+const faceCap = (role: Role) => (TYPE[role].face === 'mini' ? 5 : 7);
 
-function natural(ch: string, role: Role): number {
-  return table(role).widths[ch] ?? table(role).widths['n'] ?? 0.55;
-}
-
-/** Advance of one character in cells. Digits are tabular, so counters and page numbers don't shift. */
-export function charWidth(ch: string, role: Role): number {
-  const t = TYPE[role];
-  const w = DIGIT.test(ch) ? natural('0', role) : natural(ch, role);
-  return (w + t.tracking) * t.size;
-}
-
-/** Horizontal nudge that centers a narrow digit inside its tabular slot, in cells. */
-export function nudge(ch: string, role: Role): number {
-  if (!DIGIT.test(ch)) return 0;
-  return ((natural('0', role) - natural(ch, role)) / 2) * TYPE[role].size;
-}
-
-/** Left offset of every character, in cells, relative to the text start. */
-export function offsets(text: string, role: Role): number[] {
-  const out: number[] = [];
-  let x = 0;
-  for (const ch of display(text, role)) { out.push(x); x += charWidth(ch, role); }
-  return out;
-}
-
-/** Text width in cells (trailing tracking removed). */
-export function textWidth(text: string, role: Role): number {
-  const s = display(text, role);
-  if (!s.length) return 0;
-  let x = 0;
-  for (const ch of s) x += charWidth(ch, role);
-  return x - TYPE[role].tracking * TYPE[role].size;
-}
-
-/** Cap height in rows: where the baseline sits below the item's row. */
-export function capRows(role: Role): number {
-  return table(role).capHeight * TYPE[role].size;
-}
-
-/** Advance per character for monospaced display roles (Doto), in cells. */
+/** Cells advanced per character, including the 1-dot gap. */
 export function advance(role: Role): number {
-  return charWidth('M', role);
+  return (faceW(role) + 1) * TYPE[role].scale;
 }
 
-export function textHeight(role: Role): number { return capRows(role); }
+export function charWidth(_ch: string, role: Role): number { return advance(role); }
+
+/** Left offset of every character, in cells. */
+export function offsets(text: string, role: Role): number[] {
+  return [...display(text, role)].map((_, i) => i * advance(role));
+}
+
+/** Text width in cells (trailing gap removed). */
+export function textWidth(text: string, role: Role): number {
+  const n = [...display(text, role)].length;
+  return n ? n * advance(role) - TYPE[role].scale : 0;
+}
+
+/** Cap height in rows. */
+export function capRows(role: Role): number {
+  return faceCap(role) * TYPE[role].scale;
+}
+
+export const textHeight = capRows;
+
+/** How many characters fit in a width of cells. */
+export function perLine(role: Role, width: number): number {
+  return Math.max(1, Math.floor((width + TYPE[role].scale) / advance(role)));
+}
+
+/** Rows from one line to the next. */
+export function lead(role: Role): number { return TYPE[role].lead; }
