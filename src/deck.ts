@@ -18,7 +18,7 @@ export type Item = TextItem | BlockItem | RuleItem | ImageItem | IconItem | Link
 
 export interface Stat { value: string; label: string }
 export interface Departure { code: string; project: string; status: string; live?: boolean }
-export interface Pic { src: string; alt: string; caption?: string }
+export interface Pic { src: string; alt: string; caption?: string; /** Longer caption for the lightbox. */ full?: string }
 export interface Card { icon?: string; title: string; body: string }
 export interface Press { outlet: string; date: string; title: string; href: string; thumb?: string }
 export interface See { label: string; href: string; copy?: string }
@@ -42,7 +42,7 @@ export type Template =
   | { template: 'readout'; title?: string; lead?: string; stats: Stat[]; source?: string }
   | { template: 'departures'; heads?: [string, string, string]; rows: Departure[] }
   | { template: 'image'; kicker?: string; title: string; image: Pic; caption?: string; lead?: string }
-  | { template: 'wall'; kicker?: string; title: string; images: Pic[]; caption?: string; columns?: number; lead?: string }
+  | { template: 'wall'; kicker?: string; title: string; images: Pic[]; caption?: string; columns?: number; lead?: string; gallery?: boolean }
   | { template: 'intro'; to: string; headline: string; signal?: string; body: string; tldr: string; image: Pic }
   | { template: 'about'; paragraphs: string[]; photos: Pic[] }
   | { template: 'cards'; title: string; lead?: string; cards: Card[]; layout?: 'columns' | 'rows' }

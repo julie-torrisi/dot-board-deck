@@ -359,6 +359,16 @@ export function body(slide: SlideSpec): Item[] {
       f.para('body', s.lead, 'grey', 4);
       const { top } = extras(s);
       const bottom = Math.min(top, s.caption ? BOTTOM - 10 : BOTTOM);
+      if (s.gallery && s.images.length) {
+        // one screen at a time, with position dots; click it to browse them all
+        const h = bottom - f.row - 12;
+        const out: Item[] = [...f.items, { t: 'image', src: s.images[0].src, alt: s.images[0].alt, col: MARGIN, row: f.row, cols: CONTENT_W, rows: h }];
+        const n = s.images.length;
+        const r = f.row + h + 5;
+        s.images.forEach((_, k) => out.push({ t: 'block', col: MARGIN + k * 6, row: r + 2, w: k === 0 ? 4 : 2, h: 1, ink: k === 0 ? 'ink' : 'dim' }));
+        out.push(text('label', MARGIN + n * 6 + 6, r, `1 OF ${n} · CLICK THE SCREEN TO SEE ALL ${n}`, 'grey'));
+        return out;
+      }
       const out: Item[] = [...f.items, ...wallCells(s.images, f.row, bottom - f.row, s.columns)];
       if (s.caption) out.push(text('label', MARGIN, bottom + 4, s.caption, 'grey'));
       return out;
