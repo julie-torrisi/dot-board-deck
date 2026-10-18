@@ -5,6 +5,7 @@ import { layoutSlide, progressLength, QUOTE_MS } from './layout';
 import { slotsOf, staticsOf, imagesOf, linksOf } from './board';
 import { FlapEngine } from './flap';
 import { revealImages, load } from './reveal';
+import { showLightbox, type Shot } from './lightbox';
 import type { Deck, Item } from './deck';
 
 export interface SlideHooks { onEnter?(index: number, items: Item[]): void; overlay?(frame: Frame, t: number): boolean }
@@ -102,6 +103,18 @@ export class DeckApp {
       Object.assign(a.style, { left: `${r.x / dpr}px`, top: `${r.y / dpr}px`, width: `${r.w / dpr}px`, height: `${r.h / dpr}px` });
       this.links.append(a);
     }
+    // every image opens full size in a lightbox
+    const shots = this.shots();
+    imagesOf(this.items).forEach((im) => {
+      const r = this.renderer.cellRect(im.col, im.row, im.cols, im.rows);
+      const b = document.createElement('button');
+      b.className = 'zoom';
+      b.setAttribute('aria-label', `View larger: ${im.alt}`);
+      const at = Math.max(0, shots.findIndex((s) => s.src === im.src));
+      b.addEventListener('click', () => showLightbox(shots, at));
+      Object.assign(b.style, { left: `${r.x / dpr}px`, top: `${r.y / dpr}px`, width: `${r.w / dpr}px`, height: `${r.h / dpr}px` });
+      this.links.append(b);
+    });
   }
 
   /**
@@ -119,6 +132,14 @@ export class DeckApp {
     try { navigator.clipboard.writeText(text).then(ok, fail); } catch { fail(); }
   }
   private toastTimer = 0;
+
+  /** The images on the current slide, in order: every screen of a gallery, or each image item. */
+  private shots(): Shot[] {
+    const s = this.deck.slides[this.index];
+    if (s.template === 'wall') return s.images.map((p) => ({ src: p.src, alt: p.alt, caption: p.full ?? p.caption }));
+    if (s.template === 'about') return s.photos.map((p) => ({ src: p.src, alt: p.alt, caption: p.full ?? p.caption }));
+    return imagesOf(this.items).map((im) => ({ src: im.src, alt: im.alt }));
+  }
 
   /** Replace the live items on the current slide; changed slots flap. */
   setExtra(items: Item[]) {

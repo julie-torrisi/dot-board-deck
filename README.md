@@ -30,7 +30,7 @@ Keys follow Figma's presentation view.
 | PageDown, PageUp | Next or previous, for presentation clickers |
 | S | Speaker notes in a second window, kept in sync |
 | T | Dark or light theme (dark is the default) |
-| Click | Next slide (click the left third to go back) |
+| Click | Next slide (click the left third to go back). Click an image to see it full size. |
 
 Every slide has a hash URL (`#boot`, `#intro`, `#thanks`) for deep links. After the first load, the deck works offline through a service worker.
 

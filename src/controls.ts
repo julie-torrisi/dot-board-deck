@@ -1,4 +1,5 @@
 import type { DeckApp } from './app';
+import { lightboxOpen } from './lightbox';
 
 /**
  * Keys follow Figma presentation view:
@@ -8,7 +9,7 @@ import type { DeckApp } from './app';
 export function bindKeys(app: DeckApp) {
   addEventListener('keydown', (e) => {
     const typing = (e.target as HTMLElement)?.tagName === 'INPUT';
-    if (typing || e.metaKey || e.ctrlKey || e.altKey) return;
+    if (typing || lightboxOpen() || e.metaKey || e.ctrlKey || e.altKey) return;
     const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     if (k === 'ArrowRight' || k === 'PageDown' || k === 'n' || (k === ' ' && !e.shiftKey)) { e.preventDefault(); app.next(); }
     else if (k === 'ArrowLeft' || k === 'PageUp' || (k === ' ' && e.shiftKey)) { e.preventDefault(); app.prev(); }

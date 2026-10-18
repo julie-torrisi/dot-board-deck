@@ -13,3 +13,20 @@ body.presenter p { font-family: system-ui, sans-serif; font-size: 22px; line-hei
 .links a { position: fixed; display: block; color: transparent; overflow: hidden; border-radius: 2px; outline-offset: 2px; }
 .links a:hover { background: rgba(157, 163, 161, .12); }
 .links a:focus-visible { outline: 2px solid #ff5a60; }
+.links .zoom { position: fixed; display: block; padding: 0; border: 0; background: transparent; cursor: zoom-in; border-radius: 2px; }
+.links .zoom:hover { outline: 1px solid rgba(157, 163, 161, .45); outline-offset: 2px; }
+.links .zoom:focus-visible { outline: 2px solid #ff5a60; outline-offset: 2px; }
+.lightbox { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; background: rgba(11, 12, 12, .96); cursor: zoom-out;
+  background-image: radial-gradient(circle, #161918 1.2px, transparent 1.4px); background-size: 6px 6px; }
+.lightbox figure { margin: 0; display: grid; justify-items: center; gap: 14px; max-width: 92vw; }
+.lightbox img { width: 92vw; height: 82vh; object-fit: contain; cursor: default; }
+.lightbox figcaption { display: flex; gap: 16px; font: 500 13px/1.4 ui-monospace, monospace; letter-spacing: .08em; text-transform: uppercase; color: #9da3a1; text-align: center; }
+.lightbox .lb-count { color: #f7f8f8; }
+.lightbox button { position: fixed; border: 0; background: transparent; color: #f7f8f8; font: 300 56px/1 ui-monospace, monospace; cursor: pointer; padding: 12px 20px; border-radius: 4px; }
+.lightbox button:hover { color: #ff5a60; }
+.lightbox button:focus-visible { outline: 2px solid #ff5a60; }
+.lightbox .lb-prev { left: 2vw; top: 50%; transform: translateY(-50%); }
+.lightbox .lb-next { right: 2vw; top: 50%; transform: translateY(-50%); }
+.lightbox .lb-close { right: 2vw; top: 2vh; font-size: 40px; }
+@media (prefers-reduced-motion: no-preference) { .lightbox { animation: lb-in .18s ease-out; } }
+@keyframes lb-in { from { opacity: 0; } }
