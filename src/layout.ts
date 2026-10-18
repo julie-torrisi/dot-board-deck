@@ -273,8 +273,22 @@ export function body(slide: SlideSpec): Item[] {
     }
     case 'thanks': {
       const out: Item[] = [text('h1', CENTER, 46, s.title, 'ink', { align: 'center' })];
-      const line = s.contacts.join('  ·  ');
-      out.push(text('label', CENTER, 70, line, 'grey', { align: 'center' }));
+      // contacts on one centered line; each one with an href is underlined and clickable
+      const parts = s.contacts.map((c) => (typeof c === 'string' ? { label: c, href: '' } : c));
+      const SEP = 20; // two spaces, a dot, two spaces in the 4-cell label face
+      const widths = parts.map((p) => textWidth(p.label, 'label'));
+      const total = widths.reduce((a, w) => a + w + 1, 0) - 1 + SEP * (parts.length - 1);
+      let col = CENTER - Math.floor(total / 2);
+      parts.forEach((p, i) => {
+        const w = widths[i];
+        out.push(text('label', col, 70, p.label, p.href ? 'ink' : 'grey'));
+        if (p.href) {
+          out.push({ t: 'rule', col, row: 77, w, ink: 'grey' });
+          out.push({ t: 'link', href: p.href, label: p.label, col: col - 1, row: 68, cols: w + 2, rows: 11 });
+        }
+        if (i < parts.length - 1) out.push(text('label', col + w + 1 + 8, 70, '·', 'grey'));
+        col += w + 1 + SEP;
+      });
       return out;
     }
     case 'section': {

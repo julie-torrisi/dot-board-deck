@@ -47,7 +47,7 @@ export type Template =
   | { template: 'cards'; title: string; lead?: string; cards: Card[]; layout?: 'columns' | 'rows' }
   | { template: 'press'; title: string; lead?: string; role: string; stats?: Stat[]; press: Press[] }
   | { template: 'list'; title: string; lead?: string; columns: { head: string; items: string[] }[] }
-  | { template: 'thanks'; title: string; contacts: string[]; quotes: Quote[] }
+  | { template: 'thanks'; title: string; contacts: (string | See)[]; quotes: Quote[] }
   | { template: 'eof'; title: string; lines: string[] };
 
 export type SlideSpec = Template & Extras & { id: string; label: string; notes?: string; items?: Item[] };
