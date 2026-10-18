@@ -94,10 +94,31 @@ export class DeckApp {
       a.target = '_blank';
       a.rel = 'noopener';
       a.textContent = l.label;
+      if (l.copy) {
+        const copy = l.copy;
+        a.title = 'Copies the password, then opens the page';
+        a.addEventListener('click', () => this.copyForLink(copy));
+      }
       Object.assign(a.style, { left: `${r.x / dpr}px`, top: `${r.y / dpr}px`, width: `${r.w / dpr}px`, height: `${r.h / dpr}px` });
       this.links.append(a);
     }
   }
+
+  /**
+   * Password-protected pages can't be filled in from another site, so the deck copies the
+   * password as the page opens and says so on the board. Paste it with Cmd+V (Ctrl+V).
+   */
+  private copyForLink(text: string) {
+    const say = (msg: string) => {
+      this.setExtra([{ t: 'text', role: 'label', col: 365, row: 12, text: msg, ink: 'signal', align: 'right' }]);
+      clearTimeout(this.toastTimer);
+      this.toastTimer = window.setTimeout(() => this.setExtra([]), 6000);
+    };
+    const ok = () => say('PASSWORD COPIED. PASTE IT ON THE NEXT PAGE');
+    const fail = () => say(`PASSWORD: ${text}`);
+    try { navigator.clipboard.writeText(text).then(ok, fail); } catch { fail(); }
+  }
+  private toastTimer = 0;
 
   /** Replace the live items on the current slide; changed slots flap. */
   setExtra(items: Item[]) {

@@ -12,7 +12,8 @@ export interface RuleItem { t: 'rule'; col: number; row: number; w: number; ink?
 export interface ImageItem { t: 'image'; src: string; alt: string; col: number; row: number; cols: number; rows: number; fit?: 'contain' | 'cover' }
 export interface IconItem { t: 'icon'; name: string; col: number; row: number; ink?: InkName; scale?: number }
 /** A clickable area over the board (rendered as a real link for keyboard and screen readers). */
-export interface LinkItem { t: 'link'; href: string; label: string; col: number; row: number; cols: number; rows: number }
+/** copy: text put on the clipboard when the link is clicked, such as a page password. */
+export interface LinkItem { t: 'link'; href: string; label: string; col: number; row: number; cols: number; rows: number; copy?: string }
 export type Item = TextItem | BlockItem | RuleItem | ImageItem | IconItem | LinkItem;
 
 export interface Stat { value: string; label: string }
@@ -20,7 +21,7 @@ export interface Departure { code: string; project: string; status: string; live
 export interface Pic { src: string; alt: string; caption?: string }
 export interface Card { icon?: string; title: string; body: string }
 export interface Press { outlet: string; date: string; title: string; href: string; thumb?: string }
-export interface See { label: string; href: string }
+export interface See { label: string; href: string; copy?: string }
 export interface Quote { quote: string; by: string }
 
 /** Extras any slide can carry. */

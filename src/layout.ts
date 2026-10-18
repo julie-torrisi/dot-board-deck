@@ -87,7 +87,7 @@ export function extras(slide: SlideSpec): { items: Item[]; top: number } {
         const w = textWidth(s.label, 'label');
         items.push(text('label', col, row, s.label, 'ink'));
         items.push({ t: 'rule', col, row: row + 7, w, ink: 'grey' });
-        items.push({ t: 'link', href: s.href, label: s.label, col: col - 1, row: row - 2, cols: w + 2, rows: 11 });
+        items.push({ t: 'link', href: s.href, label: s.label, col: col - 1, row: row - 2, cols: w + 2, rows: 11, copy: s.copy });
         col += w + 16;
       }
     }
