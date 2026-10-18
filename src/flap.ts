@@ -65,6 +65,13 @@ export class FlapEngine {
   private settledAt = 0;
   reduced = false;
 
+  /** Forget everything on the board, so the next slide flaps in from blank. */
+  reset(now: number) {
+    this.anims = new Map();
+    this.slots = new Map();
+    this.progress = { from: 0, to: 0, start: now };
+  }
+
   goto(next: Map<string, Slot>, progressTo: number, now: number) {
     const { flip } = diffSlots(this.slots, next);
     const flipSet = new Set(flip);

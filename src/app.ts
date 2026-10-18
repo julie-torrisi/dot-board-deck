@@ -107,6 +107,13 @@ export class DeckApp {
     this.kick();
   }
 
+  /** Figma's R: back to the first slide, replaying the opening as if the deck just loaded. */
+  restart() {
+    this.engine.reset(performance.now());
+    this.index = -1;
+    this.go(0);
+  }
+
   next() { this.go(this.index + 1); }
   prev() { this.go(this.index - 1); }
 

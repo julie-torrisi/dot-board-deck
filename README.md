@@ -18,12 +18,19 @@ npm run build
 
 ## Present it
 
+Keys follow Figma's presentation view.
+
 | Key | Does |
 |---|---|
-| Arrow keys, space, click | Next or previous slide (click the left third to go back) |
-| F | Fullscreen |
+| Right arrow, Space, N | Next slide |
+| Left arrow, Shift + Space | Previous slide |
+| R | Restart from the first slide, replaying the opening animation |
+| F | Fullscreen (Esc exits) |
+| Home, End | First or last slide |
+| PageDown, PageUp | Next or previous, for presentation clickers |
+| S | Speaker notes in a second window, kept in sync |
 | T | Dark or light theme (dark is the default) |
-| N | Speaker notes in a second window, kept in sync |
+| Click | Next slide (click the left third to go back) |
 
 Every slide has a hash URL (`#boot`, `#intro`, `#thanks`) for deep links. After the first load, the deck works offline through a service worker.
 
